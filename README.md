@@ -5,7 +5,8 @@
 Please find a few code examples attached:
 
 <ol>
-  <li>Geospatial Analysis: Includes three Jupyter notebooks with relevant outputs and a draft of the paper my team recently submitted to the 2nd Research Conference on Forced Displacement</li>
+  <li>Geospatial Analysis: </li>
+<p> Includes three Jupyter notebooks with relevant outputs and a draft of the paper my team recently submitted to the 2nd Research Conference on Forced Displacement </p>
   <li>Buffer Analysis</li>
   <li>Dynamic documents</li>
 </ol>
