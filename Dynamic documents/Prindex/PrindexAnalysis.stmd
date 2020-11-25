@@ -1,0 +1,310 @@
+% Analysis of Prindex 2020 data
+% Javier Parada Gómez Urquiza
+% `s c(current_date)`
+
+Introduction
+--------------------------------------------------------
+
+```s/
+	drop _all
+	clear all
+	set more off
+	quietly cd "/Users/javierparada/Documents/Github/Prindex/"
+	use "appended.dta", clear
+	qui unique country
+	local number_countries `r(unique)'
+
+```
+
+Prindex data is collected in `s `number_countries'` countries through interviews with randomly selected individuals over the age of 18. Some of the countries where Prindex **has not** been collected are Angola, Democratic Republic of Congo, Central African Republic, Sudan, South Sudan, Syria, Oman, North Korea, and Papua New Guinea as shown in Map 1.  More information on coverage is available at [Prindex.net](https://prindex.net).
+
+```s/
+
+	/* STEP 1: CONVERT SHAPEFILE TO STATA FORMAT */
+	cap shp2dta using "ne_110m_admin_0_countries/ne_110m_admin_0_countries", data(worlddata) coor(worldcoor) genid(id)
+
+	/* STEP 2: CREATE YOUR TRAVEL DATA */
+	use worlddata, clear
+	qui merge 1:1 NAME using "/Users/javierparada/Documents/Github/Prindex/coverage.dta"
+	*tab NAME _merge if _merge<3
+	qui drop if _merge==2
+	qui replace visited=2 if visited==.
+	
+	label define foreignl 1 "Covered" 2 "Not Covered" 
+	label values visited foreignl  
+	
+	/* STEP 3: DRAW YOUR MAP */
+	spmap visited using worldcoor.dta if NAME!="Antarctica", id(id) fcolor(Blues) ///
+	title("Prindex Coverage") ///
+	note(" ""Generated using Stata Software.", size(*0.75)) legorder(lohi) ///
+	legend(label(2 "Covered")) legend(label(3 "Not Covered")) 
+	
+	/* STEP 4: EXPORT MAP */
+	qui graph export "maps/map1.png", width(1000) replace
+```
+![Map 1: Prindex Coverage](maps/map1.png)
+
+Reasons for Tenure Insecurity
+--------------------------------------------------------
+
+Prindex provides reasons for which individuals feel tenure insecure. In particular, the survey asks the following question:
+
+Please tell me whether each of the following is a reason why you previously said it is likely you could lose the right to use some or all of this home or property against your will in the next 5 years:
+
+rs_1. The owner may ask you to leave **YES/NO/Don't Know/Refuse**
+
+rs_2. The person paying rent may ask you to leave **YES/NO/Don't Know/Refuse**
+
+rs_3. Disagreements with family or relatives **YES/NO/Don't Know/Refuse**
+
+rs_4. Death of a household member **YES/NO/Don't Know/Refuse**
+
+rs_5. Companies may seize this property **YES/NO/Don't Know/Refuse**
+
+rs_6. Lack of money or other resources needed to live on this property **YES/NO/Don't Know/Refuse**
+
+rs_7. Government may seize **YES/NO/Don't Know/Refuse**
+
+rs_8. Issues with customary authorities **YES/NO/Don't Know/Refuse**
+
+The answers to Reason 7 are missing for some countries. The answers to Reason 8 are missing for all countries. Some individuals provided a reason for tenure insecurity even though they previously declared in the questionnaire that they were tenure secure. For that reason, we have only focused on the reasons for tenure insecurity of the tenure insecure. A better description of our procedure is provided in the following code: 
+
+
+
+```s/
+	use "appended.dta", clear
+/*==================================================
+              4: Study reasons of tenure insecurity
+==================================================*/
+	forval i = 1/7 {
+		qui gen rs_`i'=.
+		qui replace rs_`i'=1 if reason_`i'==1 & mainprop_security==0
+		qui replace rs_`i'=0 if reason_`i'==2 & mainprop_security==0
+		qui replace rs_`i'=0 if reason_`i'==3 & mainprop_security==0
+		qui replace rs_`i'=. if reason_`i'==4 & mainprop_security==0
+	}
+
+*----------4.1: Label rs variables
+	
+	label var rs_1 "The owner may ask you to leave"
+	label var rs_2 "The person paying rent may ask you to leave"
+	label var rs_3 "Disagreements with family or relatives"
+	label var rs_4 "Death of a household member"
+	label var rs_5 "Companies may seize this property"
+	label var rs_6 "Lack or money or other resources needed to live"
+	label var rs_7 "Government may seize this property"
+	*label var rs_8 "Issues with customary authorities"
+	
+
+*---------- TABLE 2
+	* tabstat rs_* [aw=prindex_wt], by(NAME_0)  labelwidth(20) format(%9.4g) save	
+	* same as
+	qui replace mainprop_security=. if mainprop_security==2
+	qui recode mainprop_security (1=0)(0=1)
+	collapse (mean) rs_* mainprop_security [aw=prindex_wt],  by(NAME_0) 
+	format rs_* %9.4g
+	gen NAME=NAME_0
+	qui save "tables/table1.dta", replace
+	qui export delimited using "tables/table1.csv", replace
+	qui reshape long rs_, i(NAME_0) j(motive)
+	*tab NAME_0 motive, sum(rs_) 
+
+```
+
+
+
+```s/
+	local title_1 "rs_1 The owner may ask you to leave"
+	local title_2 "rs_2 The person paying rent may ask you to leave"
+	local title_3 "rs_3 Disagreements with family or relatives"
+	local title_4 "rs_4 Death of a household member"
+	local title_5 "rs_5 Companies may seize this property"
+	local title_6 "rs_6 Lack or money or other resources needed to live"
+	local title_7 "rs_7 Government may seize this property"
+	
+	/* STEP 2: CREATE YOUR TRAVEL DATA */
+	use worlddata, clear
+	qui merge 1:1 NAME using "tables/table1.dta"
+	
+	spmap mainprop_security using worldcoor.dta if NAME!="Antarctica", id(id) fcolor(BuYlRd) ///
+		title("Land tenure insecuurity") ndfcolor(gs15)  clmethod(custom) clbreaks(0 .1 .20 .3 .40 .5 .60 .7 .80 .9 1) ///
+		note("Generated using Stata Software.", size(*0.75)) legorder(hilo)  legtitle("Percentage Answer=Yes")
+		
+	/* STEP 4: EXPORT MAP */
+	qui graph export "maps/map_insecurity.png", width(1000) replace
+		
+	qui{
+	forval i = 1/7 {
+		/* STEP 3: DRAW YOUR MAP */
+		spmap rs_`i' using worldcoor.dta if NAME!="Antarctica", id(id) fcolor(BuYlRd) ///
+		title(`title_`i'') ndfcolor(gs15)  clmethod(custom) clbreaks(0 .1 .20 .3 .40 .5 .60 .7 .80 .9 1) ///
+		note("Generated using Stata Software.", size(*0.75)) legorder(hilo)  legtitle("Percentage Answer=Yes")
+		
+		/* STEP 4: EXPORT MAP */
+		qui graph export "maps/map_rs_`i'.png", width(1000) replace
+	}
+	}
+```
+
+![Map 2: Land Tenure Insecurity](maps/map_insecurity.png)
+
+![Map 3.1: Reason 1](maps/map_rs_1.png)
+
+![Map 3.2: Reason 2](maps/map_rs_3.png)
+
+![Map 3.3: Reason 3](maps/map_rs_3.png)
+
+![Map 3.4: Reason 4](maps/map_rs_4.png)
+
+![Map 3.5: Reason 5](maps/map_rs_5.png)
+
+![Map 3.6: Reason 6](maps/map_rs_6.png)
+
+![Map 3.7: Reason 7](maps/map_rs_7.png)
+
+Appendix
+--------------------------------------------------------
+
+
+
+| Country                | rs_1   | rs_2   | rs_3   | rs_4   | rs_5   | rs_6   | rs_7   | 
+|------------------------|--------|--------|--------|--------|--------|--------|--------| 
+| Afghanistan            | 89.61% | 34.48% | 25.57% | 8.35%  | 55.30% | 16.87% | 16.68% | 
+| Albania                | 56.66% | 38.52% | 23.44% | 4.11%  | 44.69% | 17.81% |        | 
+| Algeria                | 56.14% | 32.84% | 26.72% | 7.67%  | 36.34% | 20.60% |        | 
+| Argentina              | 78.24% | 41.98% | 26.63% | 10.27% | 52.98% | 14.58% | 6.95%  | 
+| Armenia                | 45.68% | 10.22% | 6.25%  | 2.25%  | 34.77% | 5.67%  |        | 
+| Australia              | 78.72% | 12.44% | 22.49% | 11.32% | 38.52% | 10.77% | 3.51%  | 
+| Austria                | 40.67% | 17.66% | 15.21% | 10.85% | 33.69% | 8.76%  |        | 
+| Azerbaijan             | 82.31% | 43.02% | 27.76% | 9.63%  | 36.28% | 10.05% |        | 
+| Bangladesh             | 46.94% | 34.76% | 21.50% | 6.54%  | 30.69% | 14.87% | 16.49% | 
+| Belarus                | 78.88% | 50.04% | 39.55% | 12.20% | 52.24% | 27.55% |        | 
+| Belgium                | 71.77% | 12.12% | 14.96% | 7.51%  | 40.98% | 9.30%  |        | 
+| Benin                  | 20.36% | 16.71% | 5.61%  | 3.13%  | 9.08%  | 10.85% | 1.54%  | 
+| Bolivia                | 28.45% | 18.59% | 2.22%  | 0.34%  | 4.59%  | 4.86%  | 1.19%  | 
+| Bosnia and Herzegovina | 64.72% | 26.13% | 27.40% | 4.56%  | 41.86% | 4.30%  |        | 
+| Botswana               | 57.48% | 42.34% | 39.86% | 18.05% | 52.22% | 30.57% | 30.45% | 
+| Brazil                 | 70.77% | 28.61% | 22.36% | 4.67%  | 30.90% | 6.17%  | 0.71%  | 
+| Bulgaria               | 79.49% | 34.13% | 8.68%  | 5.20%  | 32.80% | 7.35%  |        | 
+| Burkina Faso           | 14.09% | 31.73% | 11.83% | 20.16% | 8.30%  | 62.13% | 31.28% | 
+| Cambodia               | 7.42%  | 8.69%  | 6.37%  | 4.08%  | 21.40% | 7.67%  | 2.66%  | 
+| Cameroon               | 23.40% | 9.74%  | 4.32%  | 2.93%  | 12.52% | 10.11% | 5.00%  | 
+| Canada                 | 70.30% | 28.97% | 34.68% | 15.61% | 57.01% | 22.90% |        | 
+| Chad                   | 52.60% | 48.30% | 37.28% | 30.00% | 44.60% | 43.80% | 37.52% | 
+| Chile                  | 68.28% | 31.59% | 19.31% | 6.23%  | 35.34% | 6.41%  |        | 
+| China                  | 39.00% | 16.52% | 8.99%  | 7.42%  | 26.82% | 12.95% |        | 
+| Colombia               | 38.71% | 10.20% | 4.00%  | 1.82%  | 17.28% | 4.45%  | 0.21%  | 
+| Comoros                | 49.12% | 43.31% | 33.76% | 15.63% | 45.59% | 17.34% | 31.25% | 
+| Costa Rica             | 26.33% | 13.31% | 6.22%  | 2.58%  | 15.58% | 2.24%  | 0.76%  | 
+| Cote d'Ivoire          | 41.92% | 12.01% | 2.74%  | 2.45%  | 18.04% | 6.14%  | 0.79%  | 
+| Croatia                | 92.17% | 7.84%  | 3.82%  | 1.15%  | 58.83% | 12.64% |        | 
+| Cyprus                 | 67.75% | 20.01% | 15.69% | 29.30% | 64.69% | 16.83% |        | 
+| Denmark                | 53.72% | 6.90%  | 15.61% | 17.77% | 20.64% | 5.40%  |        | 
+| Dominican Republic     | 79.36% | 41.66% | 28.17% | 12.53% | 58.26% | 14.83% | 9.11%  | 
+| Ecuador                | 24.15% | 10.43% | 5.79%  | 0.62%  | 4.96%  | 0.62%  | 0.00%  | 
+| Egypt                  | 71.72% | 35.26% | 18.50% | 0.55%  | 31.85% | 2.13%  |        | 
+| El Salvador            | 77.31% | 38.08% | 42.44% | 18.55% | 66.11% | 26.24% | 24.24% | 
+| Estonia                | 62.07% | 22.93% | 10.89% | 5.30%  | 34.46% | 5.32%  |        | 
+| Ethiopia               | 68.31% | 28.69% | 22.37% | 9.82%  | 51.50% | 27.25% | 13.13% | 
+| Finland                | 60.94% | 9.37%  | 16.54% | 12.79% | 32.25% | 7.20%  |        | 
+| France                 | 56.22% | 29.56% | 20.58% | 5.35%  | 54.51% | 8.86%  |        | 
+| Gabon                  | 74.89% | 42.79% | 31.16% | 17.16% | 54.74% | 25.40% | 16.64% | 
+| Gambia                 | 59.56% | 38.33% | 24.13% | 13.88% | 39.14% | 23.95% | 15.76% | 
+| Georgia                | 77.75% | 11.69% | 3.38%  | 6.38%  | 43.41% | 9.07%  |        | 
+| Germany                | 67.11% | 25.21% | 17.13% | 5.96%  | 36.78% | 21.18% |        | 
+| Ghana                  | 34.54% | 27.59% | 13.98% | 5.40%  | 13.97% | 5.12%  | 4.78%  | 
+| Greece                 | 86.79% | 12.34% | 6.67%  | 8.68%  | 55.97% | 10.75% |        | 
+| Guatemala              | 60.73% | 37.11% | 37.96% | 21.88% | 54.50% | 20.75% | 24.89% | 
+| Guinea                 | 74.51% | 43.59% | 44.70% | 31.67% | 59.13% | 51.10% | 43.06% | 
+| Honduras               | 28.32% | 7.01%  | 1.14%  | 0.00%  | 13.68% | 0.00%  | 1.11%  | 
+| Hungary                | 70.38% | 16.34% | 9.54%  | 3.97%  | 31.24% | 5.00%  |        | 
+| India                  | 27.78% | 16.59% | 15.73% | 5.39%  | 32.54% | 10.90% | 7.47%  | 
+| Indonesia              | 22.36% | 19.18% | 8.88%  | 2.27%  | 6.63%  | 4.36%  | 0.69%  | 
+| Iran                   | 64.35% | 27.63% | 29.02% | 10.35% | 54.10% | 9.15%  | 3.93%  | 
+| Iraq                   | 66.40% | 36.26% | 31.87% | 12.68% | 49.85% | 13.51% | 18.12% | 
+| Ireland                | 73.75% | 25.34% | 14.56% | 12.87% | 33.03% | 14.80% |        | 
+| Israel                 | 75.93% | 29.84% | 14.64% | 9.27%  | 32.00% | 10.48% |        | 
+| Italy                  | 86.21% | 8.60%  | 28.67% | 20.73% | 63.69% | 57.06% |        | 
+| Japan                  | 54.38% | 18.60% | 32.10% | 6.17%  | 34.50% | 7.85%  |        | 
+| Jordan                 | 39.14% | 14.03% | 6.31%  | 1.09%  | 18.39% | 0.00%  | 1.14%  | 
+| Kazakhstan             | 77.39% | 10.22% | 6.65%  | 6.20%  | 49.43% | 7.41%  |        | 
+| Kenya                  | 18.35% | 9.78%  | 0.89%  | 2.03%  | 19.91% | 9.24%  | 0.75%  | 
+| Kuwait                 | 69.01% | 20.83% | 21.15% | 27.16% | 43.57% |        | 19.70% | 
+| Kyrgyzstan             | 68.51% | 12.29% | 8.34%  | 3.55%  | 21.62% | 4.81%  | 2.76%  | 
+| Laos                   | 39.09% | 31.31% | 35.10% | 9.18%  | 48.22% | 15.53% | 17.67% | 
+| Latvia                 | 71.51% | 29.51% | 13.67% | 11.53% | 52.41% | 17.73% |        | 
+| Lebanon                | 73.02% | 24.38% | 18.38% | 2.21%  | 52.29% | 3.04%  | 2.97%  | 
+| Liberia                | 37.24% | 31.06% | 4.97%  | 3.97%  | 20.68% | 6.19%  | 1.54%  | 
+| Libya                  | 74.11% | 30.82% | 32.32% | 16.09% | 54.99% | 25.38% | 22.18% | 
+| Lithuania              | 69.13% | 32.94% | 15.88% | 1.90%  | 50.67% | 4.23%  |        | 
+| Luxembourg             | 60.16% | 27.14% | 25.45% | 10.64% | 37.59% | 36.38% |        | 
+| Macedonia              | 34.25% | 44.11% | 27.98% | 10.73% | 24.43% | 8.06%  |        | 
+| Madagascar             | 49.12% | 5.58%  | 0.96%  | 12.81% | 9.11%  | 12.12% | 2.03%  | 
+| Malawi                 | 26.16% | 20.52% | 3.31%  | 5.13%  | 9.85%  | 18.63% | 5.55%  | 
+| Malaysia               | 65.79% | 11.51% | 16.22% | 16.44% | 37.14% | 19.77% | 5.68%  | 
+| Mali                   | 68.58% | 37.37% | 32.84% | 25.96% | 50.91% | 45.71% | 38.74% | 
+| Malta                  | 63.19% | 21.77% | 27.35% | 5.07%  | 30.92% | 11.65% |        | 
+| Mauritania             | 70.37% | 24.42% | 15.93% | 5.41%  | 43.37% | 8.51%  | 8.10%  | 
+| Mauritius              | 48.34% | 47.41% | 46.50% | 6.16%  | 32.52% | 13.99% |        | 
+| Mexico                 | 30.43% | 22.27% | 7.35%  | 1.39%  | 13.09% | 2.25%  | 1.28%  | 
+| Moldova                | 60.28% | 44.63% | 31.84% | 14.49% | 43.18% | 9.71%  |        | 
+| Mongolia               | 59.01% | 30.19% | 19.95% | 9.06%  | 37.64% | 12.12% | 13.93% | 
+| Montenegro             | 62.27% | 19.39% | 8.51%  | 6.55%  | 19.88% | 9.43%  |        | 
+| Morocco                | 38.30% | 28.81% | 8.86%  | 0.26%  | 25.53% | 5.52%  | 1.03%  | 
+| Mozambique             | 18.33% | 19.38% | 5.67%  | 4.55%  | 4.13%  | 11.44% | 1.31%  | 
+| Myanmar                | 47.39% | 25.38% | 26.76% | 4.65%  | 40.84% | 21.58% | 10.99% | 
+| Namibia                | 29.50% | 21.16% | 12.02% | 5.98%  | 14.89% | 9.75%  | 6.40%  | 
+| Nepal                  | 18.87% | 43.37% | 32.96% | 5.81%  | 41.31% | 16.11% | 21.18% | 
+| Netherlands            | 52.64% | 27.42% | 14.42% | 14.48% | 31.12% | 14.66% |        | 
+| New Zealand            | 71.36% | 17.73% | 25.91% | 5.46%  | 41.87% | 10.56% | 2.63%  | 
+| Nicaragua              | 61.83% | 40.10% | 41.01% | 6.97%  | 44.96% | 13.59% |        | 
+| Niger                  | 14.77% | 12.56% | 7.79%  | 0.06%  | 13.22% | 2.85%  | 0.32%  | 
+| Nigeria                | 30.54% | 15.20% | 8.68%  | 6.55%  | 16.33% | 9.66%  | 6.71%  | 
+| Norway                 | 77.30% | 29.01% | 19.99% | 12.09% | 39.49% | 26.42% |        | 
+| Pakistan               | 41.95% | 14.72% | 17.52% | 7.09%  | 19.52% | 4.62%  | 10.05% | 
+| Panama                 | 61.27% | 36.02% | 28.62% | 19.67% | 48.99% | 24.73% | 9.88%  | 
+| Paraguay               | 72.15% | 34.37% | 13.53% | 17.80% | 48.97% | 23.36% |        | 
+| Peru                   | 25.45% | 18.09% | 3.78%  | 1.18%  | 18.64% | 3.20%  | 4.48%  | 
+| Philippines            | 77.29% | 39.28% | 24.50% | 18.64% | 41.85% | 36.84% | 23.75% | 
+| Poland                 | 62.34% | 18.38% | 8.74%  | 6.32%  | 37.72% | 16.88% |        | 
+| Portugal               | 76.17% | 27.24% | 26.44% | 11.20% | 43.96% | 12.56% |        | 
+| Republic of Congo      | 68.52% | 45.99% | 32.54% | 22.24% | 55.15% | 28.02% | 28.04% | 
+| Romania                | 59.83% | 42.67% | 21.44% | 2.36%  | 31.12% | 1.56%  |        | 
+| Russia                 | 77.22% | 24.42% | 17.14% | 15.54% | 48.15% | 17.94% |        | 
+| Rwanda                 | 54.13% | 10.48% | 0.00%  | 2.19%  | 18.76% | 5.88%  | 0.00%  | 
+| Saudi Arabia           | 74.59% | 17.62% | 20.05% | 19.35% | 51.77% |        | 5.08%  | 
+| Senegal                | 23.57% | 18.37% | 5.59%  | 1.10%  | 11.90% | 20.60% | 5.26%  | 
+| Serbia                 | 82.50% | 25.86% | 11.34% | 2.28%  | 39.25% | 10.76% |        | 
+| Sierra Leone           | 67.86% | 51.84% | 23.96% | 17.55% | 44.26% | 34.79% | 36.78% | 
+| Singapore              | 34.17% | 6.81%  | 9.52%  | 0.00%  | 39.24% | 19.23% |        | 
+| Slovakia               | 41.06% | 35.30% | 23.51% | 16.10% | 31.63% | 10.39% |        | 
+| Slovenia               | 77.49% | 31.48% | 46.77% | 11.89% | 55.02% | 16.60% |        | 
+| South Africa           | 59.85% | 46.94% | 48.95% | 18.93% | 51.92% | 23.08% | 24.24% | 
+| South Korea            | 66.83% | 11.30% | 10.26% | 2.96%  | 40.78% | 6.42%  |        | 
+| Spain                  | 53.37% | 22.68% | 19.09% | 15.93% | 37.65% | 21.94% |        | 
+| Sri Lanka              | 50.81% | 31.15% | 16.42% | 9.10%  | 24.39% | 16.85% |        | 
+| Swaziland              | 65.47% | 55.69% | 47.57% | 16.76% | 53.82% | 23.28% | 38.01% | 
+| Sweden                 | 78.90% | 16.58% | 15.12% | 7.84%  | 48.53% | 13.19% |        | 
+| Switzerland            | 40.44% | 10.31% | 0.00%  | 12.07% | 41.02% | 33.72% |        | 
+| Taiwan                 | 55.26% | 21.03% | 12.51% | 4.40%  | 26.85% | 17.72% |        | 
+| Tajikistan             | 38.63% | 33.73% | 36.26% | 4.47%  | 35.45% |        |        | 
+| Tanzania               | 25.29% | 16.99% | 7.04%  | 7.46%  | 8.47%  | 18.37% | 2.07%  | 
+| Thailand               | 31.65% | 4.69%  | 2.81%  | 1.50%  | 5.55%  | 13.92% | 0.31%  | 
+| Togo                   | 77.65% | 38.30% | 41.53% | 37.28% | 61.94% | 28.88% | 29.88% | 
+| Tunisia                | 55.14% | 22.43% | 5.67%  | 2.24%  | 9.34%  | 3.50%  | 2.31%  | 
+| Turkey                 | 67.62% | 28.45% | 29.04% | 10.32% | 50.75% | 19.01% |        | 
+| Turkmenistan           | 76.77% | 6.88%  | 18.86% | 4.79%  | 18.96% |        |        | 
+| Uganda                 | 19.47% | 15.92% | 6.33%  | 2.79%  | 12.55% | 14.94% | 1.72%  | 
+| Ukraine                | 71.66% | 29.16% | 15.55% | 8.94%  | 30.39% | 8.67%  |        | 
+| United Arab Emirates   | 55.70% | 23.63% | 30.92% | 30.26% | 47.83% | 30.78% |        | 
+| United Kingdom         | 28.99% | 23.38% | 6.51%  | 2.23%  | 27.73% | 14.21% | 3.69%  | 
+| United States          | 68.48% | 20.93% | 34.10% | 22.21% | 47.15% | 18.56% |        | 
+| Uruguay                | 72.98% | 43.45% | 30.04% | 11.20% | 44.87% | 14.76% |        | 
+| Uzbekistan             | 42.28% | 23.39% | 14.34% | 8.42%  | 12.72% | 18.16% |        | 
+| Venezuela              | 74.94% | 47.02% | 32.02% | 8.51%  | 49.11% | 19.56% | 11.83% | 
+| Vietnam                | 21.44% | 19.61% | 8.90%  | 3.04%  | 8.83%  | 10.82% | 3.72%  | 
+| Yemen                  | 75.32% | 48.75% | 29.84% | 3.54%  | 47.77% | 5.47%  | 12.62% | 
+| Zambia                 | 37.20% | 12.19% | 5.42%  | 4.89%  | 9.89%  | 12.20% | 11.86% | 
+| Zimbabwe               | 65.08% | 32.05% | 33.68% | 11.30% | 43.16% | 14.26% | 14.29% | 
+
+		

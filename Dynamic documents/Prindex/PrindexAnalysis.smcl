@@ -1,0 +1,160 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}/Users/javierparada/Documents/Github/Prindex/PrindexAnalysis.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}24 Sep 2020, 18:41:43
+{txt}
+{com}. //_1
+. display c(current_date)
+{res}24 Sep 2020
+{txt}
+{com}. //_2q
+. drop _all
+{txt}
+{com}. clear all
+{res}{txt}
+{com}. set more off
+{txt}
+{com}. quietly cd "/Users/javierparada/Documents/Github/Prindex/"
+{txt}
+{com}. use "appended.dta", clear
+{txt}
+{com}. qui unique country
+{txt}
+{com}. local number_countries `r(unique)'
+{txt}
+{com}. 
+. //_3
+. display `number_countries'
+{res}137
+{txt}
+{com}. //_4q
+. 
+. /* STEP 1: CONVERT SHAPEFILE TO STATA FORMAT */
+. cap shp2dta using "ne_110m_admin_0_countries/ne_110m_admin_0_countries", data(worlddata) coor(worldcoor) genid(id)
+{txt}
+{com}. 
+. /* STEP 2: CREATE YOUR TRAVEL DATA */
+. use worlddata, clear
+{txt}
+{com}. qui merge 1:1 NAME using "/Users/javierparada/Documents/Github/Prindex/coverage.dta"
+{txt}
+{com}. *tab NAME _merge if _merge<3
+. qui drop if _merge==2
+{txt}
+{com}. qui replace visited=2 if visited==.
+{txt}
+{com}.     
+. label define foreignl 1 "Covered" 2 "Not Covered" 
+{txt}
+{com}. label values visited foreignl  
+{txt}
+{com}.     
+. /* STEP 3: DRAW YOUR MAP */
+. spmap visited using worldcoor.dta if NAME!="Antarctica", id(id) fcolor(Blues) ///
+> title("Prindex Coverage") ///
+> note(" ""Generated using Stata Software.", size(*0.75)) legorder(lohi) ///
+> legend(label(2 "Covered")) legend(label(3 "Not Covered")) 
+{res}{txt}
+{com}.     
+. /* STEP 4: EXPORT MAP */
+. qui graph export "maps/map1.png", width(1000) replace
+{txt}
+{com}. //_5q
+. use "appended.dta", clear
+{txt}
+{com}. /*==================================================
+>           4: Study reasons of tenure insecurity
+> ==================================================*/
+. forval i = 1/7 {c -(}
+{txt}  2{com}.     qui gen rs_`i'=.
+{txt}  3{com}.     qui replace rs_`i'=1 if reason_`i'==1 & mainprop_security==0
+{txt}  4{com}.     qui replace rs_`i'=0 if reason_`i'==2 & mainprop_security==0
+{txt}  5{com}.     qui replace rs_`i'=0 if reason_`i'==3 & mainprop_security==0
+{txt}  6{com}.     qui replace rs_`i'=. if reason_`i'==4 & mainprop_security==0
+{txt}  7{com}. {c )-}
+{txt}
+{com}. 
+. *----------4.1: Label rs variables
+.     
+. label var rs_1 "The owner may ask you to leave"
+{txt}
+{com}. label var rs_2 "The person paying rent may ask you to leave"
+{txt}
+{com}. label var rs_3 "Disagreements with family or relatives"
+{txt}
+{com}. label var rs_4 "Death of a household member"
+{txt}
+{com}. label var rs_5 "Companies may seize this property"
+{txt}
+{com}. label var rs_6 "Lack or money or other resources needed to live"
+{txt}
+{com}. label var rs_7 "Government may seize this property"
+{txt}
+{com}. *label var rs_8 "Issues with customary authorities"
+.     
+. 
+. *---------- TABLE 2
+. * tabstat rs_* [aw=prindex_wt], by(NAME_0)  labelwidth(20) format(%9.4g) save    
+. * same as
+. qui replace mainprop_security=. if mainprop_security==2
+{txt}
+{com}. qui recode mainprop_security (1=0)(0=1)
+{txt}
+{com}. collapse (mean) rs_* mainprop_security [aw=prindex_wt],  by(NAME_0) 
+{txt}
+{com}. format rs_* %9.4g
+{txt}
+{com}. gen NAME=NAME_0
+{txt}
+{com}. qui save "tables/table1.dta", replace
+{txt}
+{com}. qui export delimited using "tables/table1.csv", replace
+{txt}
+{com}. qui reshape long rs_, i(NAME_0) j(motive)
+{txt}
+{com}. *tab NAME_0 motive, sum(rs_) 
+. 
+. //_6q
+. local title_1 "rs_1 The owner may ask you to leave"
+{txt}
+{com}. local title_2 "rs_2 The person paying rent may ask you to leave"
+{txt}
+{com}. local title_3 "rs_3 Disagreements with family or relatives"
+{txt}
+{com}. local title_4 "rs_4 Death of a household member"
+{txt}
+{com}. local title_5 "rs_5 Companies may seize this property"
+{txt}
+{com}. local title_6 "rs_6 Lack or money or other resources needed to live"
+{txt}
+{com}. local title_7 "rs_7 Government may seize this property"
+{txt}
+{com}.     
+. /* STEP 2: CREATE YOUR TRAVEL DATA */
+. use worlddata, clear
+{txt}
+{com}. qui merge 1:1 NAME using "tables/table1.dta"
+{txt}
+{com}.     
+. spmap mainprop_security using worldcoor.dta if NAME!="Antarctica", id(id) fcolor(BuYlRd) ///
+>     title("Land tenure insecuurity") ndfcolor(gs15)  clmethod(custom) clbreaks(0 .1 .20 .3 .40 .5 .60 .7 .80 .9 1) ///
+>     note("Generated using Stata Software.", size(*0.75)) legorder(hilo)  legtitle("Percentage Answer=Yes")
+{res}{txt}
+{com}.         
+. /* STEP 4: EXPORT MAP */
+. qui graph export "maps/map_insecurity.png", width(1000) replace
+{txt}
+{com}.         
+. qui{c -(}
+{txt}
+{com}. //_^
+. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}/Users/javierparada/Documents/Github/Prindex/PrindexAnalysis.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}24 Sep 2020, 18:42:04
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

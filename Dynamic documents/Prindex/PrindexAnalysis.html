@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+<style>
+/* CSS for Markstat 2.0 using Pandoc 2.0 */
+body{padding:14px 28px;}
+body, table {font-family: Helvetica, Arial, Sans-serif; font-size: 14px;}
+h1, h2, h3, h4 {font-weight: normal; color: #3366cc}
+h1 {font-size: 200%;}
+h2 {font-size: 150%;}
+h3 {font-size: 120%;}
+h4 {font-size: 100%; font-weight:bold}
+img.center {display:block; margin-left:auto; margin-right:auto}
+.small{font-size:8pt;}
+a {color: black;}
+a:visited {color: #808080;}
+a.plain {text-decoration:none;}
+a.plain:hover {text-decoration:underline;}
+.em {font-weight:bold;}
+pre, code {font-family: "lucida console", monospace;}
+pre.stata {font-size:13px; line-height:13px;}
+pre {padding:8px; border:1px solid #c0c0c0; border-radius:8px; background-color:#fdfdfd;}
+code {color:#3366cc; background-color:#fafafa;}
+pre code { color:black; background-color:white}
+/* Added for Pandoc */
+figure > img, div.figure > img {display:block; margin:auto}
+figcaption, p.caption {text-align:center; font-weight:bold; color:#3366cc;}
+h1.title {text-align:center; margin-bottom:0}
+p.author, h2.author {font-style:italic; text-align:center;margin-top:4px;margin-bottom:0}
+p.date, h3.date {text-align:center;margin-top:4px; margin-bottom:0}
+/* Tables*/
+table { margin:auto; border-collapse:collapse; }
+table caption { margin-bottom:1ex;}
+th, td { padding:4px 6px;}
+thead tr:first-child th {border-top:1px solid black; padding-top:6px}
+thead tr:last-child  th {padding-bottom:6px}
+tbody tr:first-child td {border-top:1px solid black; padding-top:6px}
+tbody tr:last-child  td {padding-bottom:6px;}
+table tbody:last-child tr:last-child td {border-bottom:1px solid black;}
+</style>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Javier Parada Gomez Urquiza" />
+  <title>Analysis of Prindex 2020 data</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header>
+<h1 class="title">Analysis of Prindex 2020 data</h1>
+<p class="author">Javier Parada Gomez Urquiza</p>
+<p class="date">24 Sep 2020</p>
+</header>
+<h2 id="introduction">Introduction</h2>
+
+<p>Prindex data is collected in 137 countries through interviews with randomly selected individuals over the age of 18. Some of the countries where Prindex <strong>has not</strong> been collected are Angola, DRC, CAR, Sudan, South Sudan, Syria, Oman, North Korea, and Papua New Guinea as shown in Map 1. More information on coverage is available at <a href="https://prindex.net">Prindex.net</a>.</p>
+
+<figure>
+<img src="maps/map1.png" alt="Map 1: Prindex Coverage" /><figcaption>Map 1: Prindex Coverage</figcaption>
+</figure>
+<h2 id="reasons-for-tenure-insecurity">Reasons for Tenure Insecurity</h2>
+<p>The questionnaire provides reasons for which the individual feels tenure insecure. In particular, it asks the following question:</p>
+<p>Please tell me whether each of the following is a reason why you previously said it is likely you could lose the right to use some or all of (If code 1 in PR0B/WP20655, insert {this home} / If code 2 in PR0B/WP20655, insert {this property}) against your will in the next 5 years.</p>
+<p>rs_1. The owner may ask you to leave <strong>YES/NO/Don’t Know/Refuse</strong></p>
+<p>rs_2. The person paying rent may ask you to leave <strong>YES/NO/Don’t Know/Refuse</strong></p>
+<p>rs_3. Disagreements with family or relatives <strong>YES/NO/Don’t Know/Refuse</strong></p>
+<p>rs_4. Death of a household member <strong>YES/NO/Don’t Know/Refuse</strong></p>
+<p>rs_5. Companies may seize this property <strong>YES/NO/Don’t Know/Refuse</strong></p>
+<p>rs_6. Lack of money or other resources needed to live on this property <strong>YES/NO/Don’t Know/Refuse</strong></p>
+<p>rs_7. Government may seize <strong>YES/NO/Don’t Know/Refuse</strong></p>
+<p>rs_8. Issues with customary authorities <strong>YES/NO/Don’t Know/Refuse</strong></p>
+<pre class='stata'>  2.     qui gen rs_`i'=.
+  3.     qui replace rs_`i'=1 if reason_`i'==1 &amp; mainprop_security==0
+  4.     qui replace rs_`i'=0 if reason_`i'==2 &amp; mainprop_security==0
+  5.     qui replace rs_`i'=0 if reason_`i'==3 &amp; mainprop_security==0
+  6.     qui replace rs_`i'=. if reason_`i'==4 &amp; mainprop_security==0
+  7. }
+</pre>
+
+<p><img src="maps/map_rs_1.png" alt="Map: Reason 1" /> <img src="maps/map_rs_2.png" alt="Map: Reason 2" /> <img src="maps/map_rs_3.png" alt="Map: Reason 3" /> <img src="maps/map_rs_4.png" alt="Map: Reason 4" /> <img src="maps/map_rs_5.png" alt="Map: Reason 5" /> <img src="maps/map_rs_6.png" alt="Map: Reason 6" /> <img src="maps/map_rs_7.png" alt="Map: Reason 7" /></p>
+<h2 id="appendix">Appendix</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Country</th>
+<th>rs_1</th>
+<th>rs_2</th>
+<th>rs_3</th>
+<th>rs_4</th>
+<th>rs_5</th>
+<th>rs_6</th>
+<th>rs_7</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Afghanistan</td>
+<td>89.61%</td>
+<td>34.48%</td>
+<td>25.57%</td>
+<td>8.35%</td>
+<td>55.30%</td>
+<td>16.87%</td>
+<td>16.68%</td>
+</tr>
+<tr class="even">
+<td>Albania</td>
+<td>56.66%</td>
+<td>38.52%</td>
+<td>23.44%</td>
+<td>4.11%</td>
+<td>44.69%</td>
+<td>17.81%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Algeria</td>
+<td>56.14%</td>
+<td>32.84%</td>
+<td>26.72%</td>
+<td>7.67%</td>
+<td>36.34%</td>
+<td>20.60%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Argentina</td>
+<td>78.24%</td>
+<td>41.98%</td>
+<td>26.63%</td>
+<td>10.27%</td>
+<td>52.98%</td>
+<td>14.58%</td>
+<td>6.95%</td>
+</tr>
+<tr class="odd">
+<td>Armenia</td>
+<td>45.68%</td>
+<td>10.22%</td>
+<td>6.25%</td>
+<td>2.25%</td>
+<td>34.77%</td>
+<td>5.67%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Australia</td>
+<td>78.72%</td>
+<td>12.44%</td>
+<td>22.49%</td>
+<td>11.32%</td>
+<td>38.52%</td>
+<td>10.77%</td>
+<td>3.51%</td>
+</tr>
+<tr class="odd">
+<td>Austria</td>
+<td>40.67%</td>
+<td>17.66%</td>
+<td>15.21%</td>
+<td>10.85%</td>
+<td>33.69%</td>
+<td>8.76%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Azerbaijan</td>
+<td>82.31%</td>
+<td>43.02%</td>
+<td>27.76%</td>
+<td>9.63%</td>
+<td>36.28%</td>
+<td>10.05%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Bangladesh</td>
+<td>46.94%</td>
+<td>34.76%</td>
+<td>21.50%</td>
+<td>6.54%</td>
+<td>30.69%</td>
+<td>14.87%</td>
+<td>16.49%</td>
+</tr>
+<tr class="even">
+<td>Belarus</td>
+<td>78.88%</td>
+<td>50.04%</td>
+<td>39.55%</td>
+<td>12.20%</td>
+<td>52.24%</td>
+<td>27.55%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Belgium</td>
+<td>71.77%</td>
+<td>12.12%</td>
+<td>14.96%</td>
+<td>7.51%</td>
+<td>40.98%</td>
+<td>9.30%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Benin</td>
+<td>20.36%</td>
+<td>16.71%</td>
+<td>5.61%</td>
+<td>3.13%</td>
+<td>9.08%</td>
+<td>10.85%</td>
+<td>1.54%</td>
+</tr>
+<tr class="odd">
+<td>Bolivia</td>
+<td>28.45%</td>
+<td>18.59%</td>
+<td>2.22%</td>
+<td>0.34%</td>
+<td>4.59%</td>
+<td>4.86%</td>
+<td>1.19%</td>
+</tr>
+<tr class="even">
+<td>Bosnia and Herzegovina</td>
+<td>64.72%</td>
+<td>26.13%</td>
+<td>27.40%</td>
+<td>4.56%</td>
+<td>41.86%</td>
+<td>4.30%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Botswana</td>
+<td>57.48%</td>
+<td>42.34%</td>
+<td>39.86%</td>
+<td>18.05%</td>
+<td>52.22%</td>
+<td>30.57%</td>
+<td>30.45%</td>
+</tr>
+<tr class="even">
+<td>Brazil</td>
+<td>70.77%</td>
+<td>28.61%</td>
+<td>22.36%</td>
+<td>4.67%</td>
+<td>30.90%</td>
+<td>6.17%</td>
+<td>0.71%</td>
+</tr>
+<tr class="odd">
+<td>Bulgaria</td>
+<td>79.49%</td>
+<td>34.13%</td>
+<td>8.68%</td>
+<td>5.20%</td>
+<td>32.80%</td>
+<td>7.35%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Burkina Faso</td>
+<td>14.09%</td>
+<td>31.73%</td>
+<td>11.83%</td>
+<td>20.16%</td>
+<td>8.30%</td>
+<td>62.13%</td>
+<td>31.28%</td>
+</tr>
+<tr class="odd">
+<td>Cambodia</td>
+<td>7.42%</td>
+<td>8.69%</td>
+<td>6.37%</td>
+<td>4.08%</td>
+<td>21.40%</td>
+<td>7.67%</td>
+<td>2.66%</td>
+</tr>
+<tr class="even">
+<td>Cameroon</td>
+<td>23.40%</td>
+<td>9.74%</td>
+<td>4.32%</td>
+<td>2.93%</td>
+<td>12.52%</td>
+<td>10.11%</td>
+<td>5.00%</td>
+</tr>
+<tr class="odd">
+<td>Canada</td>
+<td>70.30%</td>
+<td>28.97%</td>
+<td>34.68%</td>
+<td>15.61%</td>
+<td>57.01%</td>
+<td>22.90%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Chad</td>
+<td>52.60%</td>
+<td>48.30%</td>
+<td>37.28%</td>
+<td>30.00%</td>
+<td>44.60%</td>
+<td>43.80%</td>
+<td>37.52%</td>
+</tr>
+<tr class="odd">
+<td>Chile</td>
+<td>68.28%</td>
+<td>31.59%</td>
+<td>19.31%</td>
+<td>6.23%</td>
+<td>35.34%</td>
+<td>6.41%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>China</td>
+<td>39.00%</td>
+<td>16.52%</td>
+<td>8.99%</td>
+<td>7.42%</td>
+<td>26.82%</td>
+<td>12.95%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Colombia</td>
+<td>38.71%</td>
+<td>10.20%</td>
+<td>4.00%</td>
+<td>1.82%</td>
+<td>17.28%</td>
+<td>4.45%</td>
+<td>0.21%</td>
+</tr>
+<tr class="even">
+<td>Comoros</td>
+<td>49.12%</td>
+<td>43.31%</td>
+<td>33.76%</td>
+<td>15.63%</td>
+<td>45.59%</td>
+<td>17.34%</td>
+<td>31.25%</td>
+</tr>
+<tr class="odd">
+<td>Costa Rica</td>
+<td>26.33%</td>
+<td>13.31%</td>
+<td>6.22%</td>
+<td>2.58%</td>
+<td>15.58%</td>
+<td>2.24%</td>
+<td>0.76%</td>
+</tr>
+<tr class="even">
+<td>Cote d’Ivoire</td>
+<td>41.92%</td>
+<td>12.01%</td>
+<td>2.74%</td>
+<td>2.45%</td>
+<td>18.04%</td>
+<td>6.14%</td>
+<td>0.79%</td>
+</tr>
+<tr class="odd">
+<td>Croatia</td>
+<td>92.17%</td>
+<td>7.84%</td>
+<td>3.82%</td>
+<td>1.15%</td>
+<td>58.83%</td>
+<td>12.64%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Cyprus</td>
+<td>67.75%</td>
+<td>20.01%</td>
+<td>15.69%</td>
+<td>29.30%</td>
+<td>64.69%</td>
+<td>16.83%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Denmark</td>
+<td>53.72%</td>
+<td>6.90%</td>
+<td>15.61%</td>
+<td>17.77%</td>
+<td>20.64%</td>
+<td>5.40%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Dominican Republic</td>
+<td>79.36%</td>
+<td>41.66%</td>
+<td>28.17%</td>
+<td>12.53%</td>
+<td>58.26%</td>
+<td>14.83%</td>
+<td>9.11%</td>
+</tr>
+<tr class="odd">
+<td>Ecuador</td>
+<td>24.15%</td>
+<td>10.43%</td>
+<td>5.79%</td>
+<td>0.62%</td>
+<td>4.96%</td>
+<td>0.62%</td>
+<td>0.00%</td>
+</tr>
+<tr class="even">
+<td>Egypt</td>
+<td>71.72%</td>
+<td>35.26%</td>
+<td>18.50%</td>
+<td>0.55%</td>
+<td>31.85%</td>
+<td>2.13%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>El Salvador</td>
+<td>77.31%</td>
+<td>38.08%</td>
+<td>42.44%</td>
+<td>18.55%</td>
+<td>66.11%</td>
+<td>26.24%</td>
+<td>24.24%</td>
+</tr>
+<tr class="even">
+<td>Estonia</td>
+<td>62.07%</td>
+<td>22.93%</td>
+<td>10.89%</td>
+<td>5.30%</td>
+<td>34.46%</td>
+<td>5.32%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Ethiopia</td>
+<td>68.31%</td>
+<td>28.69%</td>
+<td>22.37%</td>
+<td>9.82%</td>
+<td>51.50%</td>
+<td>27.25%</td>
+<td>13.13%</td>
+</tr>
+<tr class="even">
+<td>Finland</td>
+<td>60.94%</td>
+<td>9.37%</td>
+<td>16.54%</td>
+<td>12.79%</td>
+<td>32.25%</td>
+<td>7.20%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>France</td>
+<td>56.22%</td>
+<td>29.56%</td>
+<td>20.58%</td>
+<td>5.35%</td>
+<td>54.51%</td>
+<td>8.86%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Gabon</td>
+<td>74.89%</td>
+<td>42.79%</td>
+<td>31.16%</td>
+<td>17.16%</td>
+<td>54.74%</td>
+<td>25.40%</td>
+<td>16.64%</td>
+</tr>
+<tr class="odd">
+<td>Gambia</td>
+<td>59.56%</td>
+<td>38.33%</td>
+<td>24.13%</td>
+<td>13.88%</td>
+<td>39.14%</td>
+<td>23.95%</td>
+<td>15.76%</td>
+</tr>
+<tr class="even">
+<td>Georgia</td>
+<td>77.75%</td>
+<td>11.69%</td>
+<td>3.38%</td>
+<td>6.38%</td>
+<td>43.41%</td>
+<td>9.07%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Germany</td>
+<td>67.11%</td>
+<td>25.21%</td>
+<td>17.13%</td>
+<td>5.96%</td>
+<td>36.78%</td>
+<td>21.18%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Ghana</td>
+<td>34.54%</td>
+<td>27.59%</td>
+<td>13.98%</td>
+<td>5.40%</td>
+<td>13.97%</td>
+<td>5.12%</td>
+<td>4.78%</td>
+</tr>
+<tr class="odd">
+<td>Greece</td>
+<td>86.79%</td>
+<td>12.34%</td>
+<td>6.67%</td>
+<td>8.68%</td>
+<td>55.97%</td>
+<td>10.75%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Guatemala</td>
+<td>60.73%</td>
+<td>37.11%</td>
+<td>37.96%</td>
+<td>21.88%</td>
+<td>54.50%</td>
+<td>20.75%</td>
+<td>24.89%</td>
+</tr>
+<tr class="odd">
+<td>Guinea</td>
+<td>74.51%</td>
+<td>43.59%</td>
+<td>44.70%</td>
+<td>31.67%</td>
+<td>59.13%</td>
+<td>51.10%</td>
+<td>43.06%</td>
+</tr>
+<tr class="even">
+<td>Honduras</td>
+<td>28.32%</td>
+<td>7.01%</td>
+<td>1.14%</td>
+<td>0.00%</td>
+<td>13.68%</td>
+<td>0.00%</td>
+<td>1.11%</td>
+</tr>
+<tr class="odd">
+<td>Hungary</td>
+<td>70.38%</td>
+<td>16.34%</td>
+<td>9.54%</td>
+<td>3.97%</td>
+<td>31.24%</td>
+<td>5.00%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>India</td>
+<td>27.78%</td>
+<td>16.59%</td>
+<td>15.73%</td>
+<td>5.39%</td>
+<td>32.54%</td>
+<td>10.90%</td>
+<td>7.47%</td>
+</tr>
+<tr class="odd">
+<td>Indonesia</td>
+<td>22.36%</td>
+<td>19.18%</td>
+<td>8.88%</td>
+<td>2.27%</td>
+<td>6.63%</td>
+<td>4.36%</td>
+<td>0.69%</td>
+</tr>
+<tr class="even">
+<td>Iran</td>
+<td>64.35%</td>
+<td>27.63%</td>
+<td>29.02%</td>
+<td>10.35%</td>
+<td>54.10%</td>
+<td>9.15%</td>
+<td>3.93%</td>
+</tr>
+<tr class="odd">
+<td>Iraq</td>
+<td>66.40%</td>
+<td>36.26%</td>
+<td>31.87%</td>
+<td>12.68%</td>
+<td>49.85%</td>
+<td>13.51%</td>
+<td>18.12%</td>
+</tr>
+<tr class="even">
+<td>Ireland</td>
+<td>73.75%</td>
+<td>25.34%</td>
+<td>14.56%</td>
+<td>12.87%</td>
+<td>33.03%</td>
+<td>14.80%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Israel</td>
+<td>75.93%</td>
+<td>29.84%</td>
+<td>14.64%</td>
+<td>9.27%</td>
+<td>32.00%</td>
+<td>10.48%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Italy</td>
+<td>86.21%</td>
+<td>8.60%</td>
+<td>28.67%</td>
+<td>20.73%</td>
+<td>63.69%</td>
+<td>57.06%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Japan</td>
+<td>54.38%</td>
+<td>18.60%</td>
+<td>32.10%</td>
+<td>6.17%</td>
+<td>34.50%</td>
+<td>7.85%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Jordan</td>
+<td>39.14%</td>
+<td>14.03%</td>
+<td>6.31%</td>
+<td>1.09%</td>
+<td>18.39%</td>
+<td>0.00%</td>
+<td>1.14%</td>
+</tr>
+<tr class="odd">
+<td>Kazakhstan</td>
+<td>77.39%</td>
+<td>10.22%</td>
+<td>6.65%</td>
+<td>6.20%</td>
+<td>49.43%</td>
+<td>7.41%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Kenya</td>
+<td>18.35%</td>
+<td>9.78%</td>
+<td>0.89%</td>
+<td>2.03%</td>
+<td>19.91%</td>
+<td>9.24%</td>
+<td>0.75%</td>
+</tr>
+<tr class="odd">
+<td>Kuwait</td>
+<td>69.01%</td>
+<td>20.83%</td>
+<td>21.15%</td>
+<td>27.16%</td>
+<td>43.57%</td>
+<td></td>
+<td>19.70%</td>
+</tr>
+<tr class="even">
+<td>Kyrgyzstan</td>
+<td>68.51%</td>
+<td>12.29%</td>
+<td>8.34%</td>
+<td>3.55%</td>
+<td>21.62%</td>
+<td>4.81%</td>
+<td>2.76%</td>
+</tr>
+<tr class="odd">
+<td>Laos</td>
+<td>39.09%</td>
+<td>31.31%</td>
+<td>35.10%</td>
+<td>9.18%</td>
+<td>48.22%</td>
+<td>15.53%</td>
+<td>17.67%</td>
+</tr>
+<tr class="even">
+<td>Latvia</td>
+<td>71.51%</td>
+<td>29.51%</td>
+<td>13.67%</td>
+<td>11.53%</td>
+<td>52.41%</td>
+<td>17.73%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Lebanon</td>
+<td>73.02%</td>
+<td>24.38%</td>
+<td>18.38%</td>
+<td>2.21%</td>
+<td>52.29%</td>
+<td>3.04%</td>
+<td>2.97%</td>
+</tr>
+<tr class="even">
+<td>Liberia</td>
+<td>37.24%</td>
+<td>31.06%</td>
+<td>4.97%</td>
+<td>3.97%</td>
+<td>20.68%</td>
+<td>6.19%</td>
+<td>1.54%</td>
+</tr>
+<tr class="odd">
+<td>Libya</td>
+<td>74.11%</td>
+<td>30.82%</td>
+<td>32.32%</td>
+<td>16.09%</td>
+<td>54.99%</td>
+<td>25.38%</td>
+<td>22.18%</td>
+</tr>
+<tr class="even">
+<td>Lithuania</td>
+<td>69.13%</td>
+<td>32.94%</td>
+<td>15.88%</td>
+<td>1.90%</td>
+<td>50.67%</td>
+<td>4.23%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Luxembourg</td>
+<td>60.16%</td>
+<td>27.14%</td>
+<td>25.45%</td>
+<td>10.64%</td>
+<td>37.59%</td>
+<td>36.38%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Macedonia</td>
+<td>34.25%</td>
+<td>44.11%</td>
+<td>27.98%</td>
+<td>10.73%</td>
+<td>24.43%</td>
+<td>8.06%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Madagascar</td>
+<td>49.12%</td>
+<td>5.58%</td>
+<td>0.96%</td>
+<td>12.81%</td>
+<td>9.11%</td>
+<td>12.12%</td>
+<td>2.03%</td>
+</tr>
+<tr class="even">
+<td>Malawi</td>
+<td>26.16%</td>
+<td>20.52%</td>
+<td>3.31%</td>
+<td>5.13%</td>
+<td>9.85%</td>
+<td>18.63%</td>
+<td>5.55%</td>
+</tr>
+<tr class="odd">
+<td>Malaysia</td>
+<td>65.79%</td>
+<td>11.51%</td>
+<td>16.22%</td>
+<td>16.44%</td>
+<td>37.14%</td>
+<td>19.77%</td>
+<td>5.68%</td>
+</tr>
+<tr class="even">
+<td>Mali</td>
+<td>68.58%</td>
+<td>37.37%</td>
+<td>32.84%</td>
+<td>25.96%</td>
+<td>50.91%</td>
+<td>45.71%</td>
+<td>38.74%</td>
+</tr>
+<tr class="odd">
+<td>Malta</td>
+<td>63.19%</td>
+<td>21.77%</td>
+<td>27.35%</td>
+<td>5.07%</td>
+<td>30.92%</td>
+<td>11.65%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Mauritania</td>
+<td>70.37%</td>
+<td>24.42%</td>
+<td>15.93%</td>
+<td>5.41%</td>
+<td>43.37%</td>
+<td>8.51%</td>
+<td>8.10%</td>
+</tr>
+<tr class="odd">
+<td>Mauritius</td>
+<td>48.34%</td>
+<td>47.41%</td>
+<td>46.50%</td>
+<td>6.16%</td>
+<td>32.52%</td>
+<td>13.99%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Mexico</td>
+<td>30.43%</td>
+<td>22.27%</td>
+<td>7.35%</td>
+<td>1.39%</td>
+<td>13.09%</td>
+<td>2.25%</td>
+<td>1.28%</td>
+</tr>
+<tr class="odd">
+<td>Moldova</td>
+<td>60.28%</td>
+<td>44.63%</td>
+<td>31.84%</td>
+<td>14.49%</td>
+<td>43.18%</td>
+<td>9.71%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Mongolia</td>
+<td>59.01%</td>
+<td>30.19%</td>
+<td>19.95%</td>
+<td>9.06%</td>
+<td>37.64%</td>
+<td>12.12%</td>
+<td>13.93%</td>
+</tr>
+<tr class="odd">
+<td>Montenegro</td>
+<td>62.27%</td>
+<td>19.39%</td>
+<td>8.51%</td>
+<td>6.55%</td>
+<td>19.88%</td>
+<td>9.43%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Morocco</td>
+<td>38.30%</td>
+<td>28.81%</td>
+<td>8.86%</td>
+<td>0.26%</td>
+<td>25.53%</td>
+<td>5.52%</td>
+<td>1.03%</td>
+</tr>
+<tr class="odd">
+<td>Mozambique</td>
+<td>18.33%</td>
+<td>19.38%</td>
+<td>5.67%</td>
+<td>4.55%</td>
+<td>4.13%</td>
+<td>11.44%</td>
+<td>1.31%</td>
+</tr>
+<tr class="even">
+<td>Myanmar</td>
+<td>47.39%</td>
+<td>25.38%</td>
+<td>26.76%</td>
+<td>4.65%</td>
+<td>40.84%</td>
+<td>21.58%</td>
+<td>10.99%</td>
+</tr>
+<tr class="odd">
+<td>Namibia</td>
+<td>29.50%</td>
+<td>21.16%</td>
+<td>12.02%</td>
+<td>5.98%</td>
+<td>14.89%</td>
+<td>9.75%</td>
+<td>6.40%</td>
+</tr>
+<tr class="even">
+<td>Nepal</td>
+<td>18.87%</td>
+<td>43.37%</td>
+<td>32.96%</td>
+<td>5.81%</td>
+<td>41.31%</td>
+<td>16.11%</td>
+<td>21.18%</td>
+</tr>
+<tr class="odd">
+<td>Netherlands</td>
+<td>52.64%</td>
+<td>27.42%</td>
+<td>14.42%</td>
+<td>14.48%</td>
+<td>31.12%</td>
+<td>14.66%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>New Zealand</td>
+<td>71.36%</td>
+<td>17.73%</td>
+<td>25.91%</td>
+<td>5.46%</td>
+<td>41.87%</td>
+<td>10.56%</td>
+<td>2.63%</td>
+</tr>
+<tr class="odd">
+<td>Nicaragua</td>
+<td>61.83%</td>
+<td>40.10%</td>
+<td>41.01%</td>
+<td>6.97%</td>
+<td>44.96%</td>
+<td>13.59%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Niger</td>
+<td>14.77%</td>
+<td>12.56%</td>
+<td>7.79%</td>
+<td>0.06%</td>
+<td>13.22%</td>
+<td>2.85%</td>
+<td>0.32%</td>
+</tr>
+<tr class="odd">
+<td>Nigeria</td>
+<td>30.54%</td>
+<td>15.20%</td>
+<td>8.68%</td>
+<td>6.55%</td>
+<td>16.33%</td>
+<td>9.66%</td>
+<td>6.71%</td>
+</tr>
+<tr class="even">
+<td>Norway</td>
+<td>77.30%</td>
+<td>29.01%</td>
+<td>19.99%</td>
+<td>12.09%</td>
+<td>39.49%</td>
+<td>26.42%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Pakistan</td>
+<td>41.95%</td>
+<td>14.72%</td>
+<td>17.52%</td>
+<td>7.09%</td>
+<td>19.52%</td>
+<td>4.62%</td>
+<td>10.05%</td>
+</tr>
+<tr class="even">
+<td>Panama</td>
+<td>61.27%</td>
+<td>36.02%</td>
+<td>28.62%</td>
+<td>19.67%</td>
+<td>48.99%</td>
+<td>24.73%</td>
+<td>9.88%</td>
+</tr>
+<tr class="odd">
+<td>Paraguay</td>
+<td>72.15%</td>
+<td>34.37%</td>
+<td>13.53%</td>
+<td>17.80%</td>
+<td>48.97%</td>
+<td>23.36%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Peru</td>
+<td>25.45%</td>
+<td>18.09%</td>
+<td>3.78%</td>
+<td>1.18%</td>
+<td>18.64%</td>
+<td>3.20%</td>
+<td>4.48%</td>
+</tr>
+<tr class="odd">
+<td>Philippines</td>
+<td>77.29%</td>
+<td>39.28%</td>
+<td>24.50%</td>
+<td>18.64%</td>
+<td>41.85%</td>
+<td>36.84%</td>
+<td>23.75%</td>
+</tr>
+<tr class="even">
+<td>Poland</td>
+<td>62.34%</td>
+<td>18.38%</td>
+<td>8.74%</td>
+<td>6.32%</td>
+<td>37.72%</td>
+<td>16.88%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Portugal</td>
+<td>76.17%</td>
+<td>27.24%</td>
+<td>26.44%</td>
+<td>11.20%</td>
+<td>43.96%</td>
+<td>12.56%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Republic of Congo</td>
+<td>68.52%</td>
+<td>45.99%</td>
+<td>32.54%</td>
+<td>22.24%</td>
+<td>55.15%</td>
+<td>28.02%</td>
+<td>28.04%</td>
+</tr>
+<tr class="odd">
+<td>Romania</td>
+<td>59.83%</td>
+<td>42.67%</td>
+<td>21.44%</td>
+<td>2.36%</td>
+<td>31.12%</td>
+<td>1.56%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Russia</td>
+<td>77.22%</td>
+<td>24.42%</td>
+<td>17.14%</td>
+<td>15.54%</td>
+<td>48.15%</td>
+<td>17.94%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Rwanda</td>
+<td>54.13%</td>
+<td>10.48%</td>
+<td>0.00%</td>
+<td>2.19%</td>
+<td>18.76%</td>
+<td>5.88%</td>
+<td>0.00%</td>
+</tr>
+<tr class="even">
+<td>Saudi Arabia</td>
+<td>74.59%</td>
+<td>17.62%</td>
+<td>20.05%</td>
+<td>19.35%</td>
+<td>51.77%</td>
+<td></td>
+<td>5.08%</td>
+</tr>
+<tr class="odd">
+<td>Senegal</td>
+<td>23.57%</td>
+<td>18.37%</td>
+<td>5.59%</td>
+<td>1.10%</td>
+<td>11.90%</td>
+<td>20.60%</td>
+<td>5.26%</td>
+</tr>
+<tr class="even">
+<td>Serbia</td>
+<td>82.50%</td>
+<td>25.86%</td>
+<td>11.34%</td>
+<td>2.28%</td>
+<td>39.25%</td>
+<td>10.76%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Sierra Leone</td>
+<td>67.86%</td>
+<td>51.84%</td>
+<td>23.96%</td>
+<td>17.55%</td>
+<td>44.26%</td>
+<td>34.79%</td>
+<td>36.78%</td>
+</tr>
+<tr class="even">
+<td>Singapore</td>
+<td>34.17%</td>
+<td>6.81%</td>
+<td>9.52%</td>
+<td>0.00%</td>
+<td>39.24%</td>
+<td>19.23%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Slovakia</td>
+<td>41.06%</td>
+<td>35.30%</td>
+<td>23.51%</td>
+<td>16.10%</td>
+<td>31.63%</td>
+<td>10.39%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Slovenia</td>
+<td>77.49%</td>
+<td>31.48%</td>
+<td>46.77%</td>
+<td>11.89%</td>
+<td>55.02%</td>
+<td>16.60%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>South Africa</td>
+<td>59.85%</td>
+<td>46.94%</td>
+<td>48.95%</td>
+<td>18.93%</td>
+<td>51.92%</td>
+<td>23.08%</td>
+<td>24.24%</td>
+</tr>
+<tr class="even">
+<td>South Korea</td>
+<td>66.83%</td>
+<td>11.30%</td>
+<td>10.26%</td>
+<td>2.96%</td>
+<td>40.78%</td>
+<td>6.42%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Spain</td>
+<td>53.37%</td>
+<td>22.68%</td>
+<td>19.09%</td>
+<td>15.93%</td>
+<td>37.65%</td>
+<td>21.94%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Sri Lanka</td>
+<td>50.81%</td>
+<td>31.15%</td>
+<td>16.42%</td>
+<td>9.10%</td>
+<td>24.39%</td>
+<td>16.85%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Swaziland</td>
+<td>65.47%</td>
+<td>55.69%</td>
+<td>47.57%</td>
+<td>16.76%</td>
+<td>53.82%</td>
+<td>23.28%</td>
+<td>38.01%</td>
+</tr>
+<tr class="even">
+<td>Sweden</td>
+<td>78.90%</td>
+<td>16.58%</td>
+<td>15.12%</td>
+<td>7.84%</td>
+<td>48.53%</td>
+<td>13.19%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Switzerland</td>
+<td>40.44%</td>
+<td>10.31%</td>
+<td>0.00%</td>
+<td>12.07%</td>
+<td>41.02%</td>
+<td>33.72%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Taiwan</td>
+<td>55.26%</td>
+<td>21.03%</td>
+<td>12.51%</td>
+<td>4.40%</td>
+<td>26.85%</td>
+<td>17.72%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Tajikistan</td>
+<td>38.63%</td>
+<td>33.73%</td>
+<td>36.26%</td>
+<td>4.47%</td>
+<td>35.45%</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Tanzania</td>
+<td>25.29%</td>
+<td>16.99%</td>
+<td>7.04%</td>
+<td>7.46%</td>
+<td>8.47%</td>
+<td>18.37%</td>
+<td>2.07%</td>
+</tr>
+<tr class="odd">
+<td>Thailand</td>
+<td>31.65%</td>
+<td>4.69%</td>
+<td>2.81%</td>
+<td>1.50%</td>
+<td>5.55%</td>
+<td>13.92%</td>
+<td>0.31%</td>
+</tr>
+<tr class="even">
+<td>Togo</td>
+<td>77.65%</td>
+<td>38.30%</td>
+<td>41.53%</td>
+<td>37.28%</td>
+<td>61.94%</td>
+<td>28.88%</td>
+<td>29.88%</td>
+</tr>
+<tr class="odd">
+<td>Tunisia</td>
+<td>55.14%</td>
+<td>22.43%</td>
+<td>5.67%</td>
+<td>2.24%</td>
+<td>9.34%</td>
+<td>3.50%</td>
+<td>2.31%</td>
+</tr>
+<tr class="even">
+<td>Turkey</td>
+<td>67.62%</td>
+<td>28.45%</td>
+<td>29.04%</td>
+<td>10.32%</td>
+<td>50.75%</td>
+<td>19.01%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Turkmenistan</td>
+<td>76.77%</td>
+<td>6.88%</td>
+<td>18.86%</td>
+<td>4.79%</td>
+<td>18.96%</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Uganda</td>
+<td>19.47%</td>
+<td>15.92%</td>
+<td>6.33%</td>
+<td>2.79%</td>
+<td>12.55%</td>
+<td>14.94%</td>
+<td>1.72%</td>
+</tr>
+<tr class="odd">
+<td>Ukraine</td>
+<td>71.66%</td>
+<td>29.16%</td>
+<td>15.55%</td>
+<td>8.94%</td>
+<td>30.39%</td>
+<td>8.67%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>United Arab Emirates</td>
+<td>55.70%</td>
+<td>23.63%</td>
+<td>30.92%</td>
+<td>30.26%</td>
+<td>47.83%</td>
+<td>30.78%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>United Kingdom</td>
+<td>28.99%</td>
+<td>23.38%</td>
+<td>6.51%</td>
+<td>2.23%</td>
+<td>27.73%</td>
+<td>14.21%</td>
+<td>3.69%</td>
+</tr>
+<tr class="even">
+<td>United States</td>
+<td>68.48%</td>
+<td>20.93%</td>
+<td>34.10%</td>
+<td>22.21%</td>
+<td>47.15%</td>
+<td>18.56%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Uruguay</td>
+<td>72.98%</td>
+<td>43.45%</td>
+<td>30.04%</td>
+<td>11.20%</td>
+<td>44.87%</td>
+<td>14.76%</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Uzbekistan</td>
+<td>42.28%</td>
+<td>23.39%</td>
+<td>14.34%</td>
+<td>8.42%</td>
+<td>12.72%</td>
+<td>18.16%</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Venezuela</td>
+<td>74.94%</td>
+<td>47.02%</td>
+<td>32.02%</td>
+<td>8.51%</td>
+<td>49.11%</td>
+<td>19.56%</td>
+<td>11.83%</td>
+</tr>
+<tr class="even">
+<td>Vietnam</td>
+<td>21.44%</td>
+<td>19.61%</td>
+<td>8.90%</td>
+<td>3.04%</td>
+<td>8.83%</td>
+<td>10.82%</td>
+<td>3.72%</td>
+</tr>
+<tr class="odd">
+<td>Yemen</td>
+<td>75.32%</td>
+<td>48.75%</td>
+<td>29.84%</td>
+<td>3.54%</td>
+<td>47.77%</td>
+<td>5.47%</td>
+<td>12.62%</td>
+</tr>
+<tr class="even">
+<td>Zambia</td>
+<td>37.20%</td>
+<td>12.19%</td>
+<td>5.42%</td>
+<td>4.89%</td>
+<td>9.89%</td>
+<td>12.20%</td>
+<td>11.86%</td>
+</tr>
+<tr class="odd">
+<td>Zimbabwe</td>
+<td>65.08%</td>
+<td>32.05%</td>
+<td>33.68%</td>
+<td>11.30%</td>
+<td>43.16%</td>
+<td>14.26%</td>
+<td>14.29%</td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>
