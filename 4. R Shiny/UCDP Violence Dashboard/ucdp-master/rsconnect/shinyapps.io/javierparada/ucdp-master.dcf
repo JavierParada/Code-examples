@@ -1,0 +1,12 @@
+name: ucdp-master
+title: ucdp-master
+username:
+account: javierparada
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3312776
+bundleId: 3913744
+url: https://javierparada.shinyapps.io/ucdp-master/
+when: 1606507057.02735
+asMultiple: FALSE
+asStatic: FALSE
