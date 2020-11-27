@@ -6,3 +6,5 @@ navbarPage("UCDP 2014 Data for Syria, Turkey, and Iraq", id="main",
            tabPanel("Data", DT::dataTableOutput("data")),
            tabPanel("Read Me",includeMarkdown("readme.md")))
 
+
+

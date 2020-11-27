@@ -13,6 +13,7 @@ shinyServer(function(input, output) {
   bb_data <- data.frame(bb_data)
   bb_data$Latitude <-  as.numeric(bb_data$latitude)
   bb_data$Longitude <-  as.numeric(bb_data$longitude)
+  bb_data$Best <-  log(bb_data$best)
   bb_data=filter(bb_data, Latitude != "NA") # removing NA values
   bb_data=filter(bb_data, Longitude != "NA") # removing NA values
   
@@ -26,7 +27,7 @@ shinyServer(function(input, output) {
 
   # create a color paletter for category type in the data file
   
-  pal <- colorFactor(pal = c("#1b9e77", "#d95f02", "#7570b3"), domain = c("state-based armed conflict", "non-state conflict", "one-sided violence"))
+  pal <- colorFactor(pal = c("#669E9A", "#E1BB44", "#C33B27"), domain = c("state-based armed conflict", "non-state conflict", "one-sided violence"))
    
   # create the leaflet map  
   output$bbmap <- renderLeaflet({
@@ -34,7 +35,7 @@ shinyServer(function(input, output) {
       addCircles(lng = ~Longitude, lat = ~Latitude) %>% 
       addTiles() %>%
       addCircleMarkers(data = bb_data, lat =  ~Latitude, lng =~Longitude, 
-                       radius = 3, popup = ~as.character(cntnt), 
+                       radius = ~Best, popup = ~as.character(cntnt), 
                        color = ~pal(type_of_violence),
                        stroke = FALSE, fillOpacity = 0.8)%>%
       addLegend(pal=pal, values=bb_data$type_of_violence,opacity=1, na.label = "Not Available")%>%
@@ -46,8 +47,8 @@ shinyServer(function(input, output) {
   #create a data object to display data
   
   output$data <-DT::renderDataTable(datatable(
-      bb_data[,c(-1,-23,-24,-25,-28:-35)],filter = 'top',
-      colnames = c("id", "relid")
+      bb_data,filter = 'top',
+      colnames = c("id","relid","year","type","source","latitude","longitude","country","best","Latitude","Longitude")
   ))
 
   

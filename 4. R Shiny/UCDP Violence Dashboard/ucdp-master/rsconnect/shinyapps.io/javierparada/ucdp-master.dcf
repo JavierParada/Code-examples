@@ -5,8 +5,8 @@ account: javierparada
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 3312776
-bundleId: 3913744
+bundleId: 3913950
 url: https://javierparada.shinyapps.io/ucdp-master/
-when: 1606507057.02735
+when: 1606511235.2825
 asMultiple: FALSE
 asStatic: FALSE
