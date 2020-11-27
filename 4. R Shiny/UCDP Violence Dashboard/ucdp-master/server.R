@@ -35,7 +35,7 @@ shinyServer(function(input, output) {
       addCircles(lng = ~Longitude, lat = ~Latitude) %>% 
       addTiles() %>%
       addCircleMarkers(data = bb_data, lat =  ~Latitude, lng =~Longitude, 
-                       radius = ~Best, popup = ~as.character(cntnt), 
+                       radius = 3, popup = ~as.character(cntnt), 
                        color = ~pal(type_of_violence),
                        stroke = FALSE, fillOpacity = 0.8)%>%
       addLegend(pal=pal, values=bb_data$type_of_violence,opacity=1, na.label = "Not Available")%>%
