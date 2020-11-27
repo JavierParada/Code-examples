@@ -11,7 +11,7 @@ Please find a few code examples attached:
   <p> Stata do-file with regression analysis on land use changes along the Syria-Turkey border with results displayed in a Power Point presentation </p>
   <li>Dynamic documents:</li>
   <p>Dynamic document example based on skills acquired attending Luisa Cardoso's presentation on Research Transparency and Reproducibility Training (RT2). I also attach diploma received from attending the Manage Successful Impact Evaluation Surveys course where I learned a lot about DIME's work and became very familiar with SurveyCTO and iefieldkit.</p>
-  <li> R Shiny example:</li>
+  <li> R Shiny examples:</li>
   <ol>
         <li>Literacy rates in India by state, gender, and urban/rural.</li>
         <li>Leaflet map with UCDP data on violence in Syria, Turkey and Iraq in 2014.</li>
