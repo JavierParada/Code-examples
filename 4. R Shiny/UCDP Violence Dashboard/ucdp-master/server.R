@@ -20,12 +20,13 @@ shinyServer(function(input, output) {
   
   bb_data <- mutate(bb_data, cntnt=paste0('<strong>Name: </strong>',relid,
                                           '<br><strong>Year: </strong> ',year,
-                                          '<br><strong>Best: </strong> ',best,
+                                          '<br><strong>Type of violence: </strong> ',type_of_violence,
+                                          '<br><strong>Fatalities: </strong> ',best,
                                           '<br><strong>Article: </strong>',source_article)) 
 
   # create a color paletter for category type in the data file
   
-  pal <- colorFactor(pal = c("#1b9e77", "#d95f02", "#7570b3"), domain = c("1", "2", "3"))
+  pal <- colorFactor(pal = c("#1b9e77", "#d95f02", "#7570b3"), domain = c("state-based armed conflict", "non-state conflict", "one-sided violence"))
    
   # create the leaflet map  
   output$bbmap <- renderLeaflet({
