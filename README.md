@@ -13,4 +13,6 @@ Please find a few code examples attached:
   <p>Dynamic document example based on skills acquired attending Luisa Cardoso's presentation on Research Transparency and Reproducibility Training (RT2). I also attach diploma received from attending the Manage Successful Impact Evaluation Surveys course where I learned a lot about DIME's work and became very familiar with SurveyCTO and iefieldkit.</p>
   <li> R Shiny example:</li>
    <p>Literacy rates in India by state, gender, and urban/rural. </p>
+   <p>Leaflet map with UCDP data on violence in Syria, Turkey and Iraq in 2014. </p>
+
 </ol>
