@@ -2,7 +2,7 @@
       name:  <unnamed>
        log:  C:\Users\WB459082\OneDrive - WBG\Documents\Code-examples\5. DECDG\part1_script1.txt
   log type:  text
- opened on:  26 Jan 2021, 19:28:14
+ opened on:  26 Jan 2021, 21:16:01
 
 . /*==================================================
 > Project:       Part 1: People using safely managed sanitation services (% of population)
@@ -110,7 +110,7 @@ C:\Users\WB459082\OneDrive - WBG\Documents\Code-examples\5. DECDG
 . 
 . *----------3.1: Download data wide
 . wbopendata, language(en - English) country() topics() indicator(SH.STA.SMSS.ZS - People using safely managed sanitation services (% of population)) clear
-file C:\Users\WB459082\AppData\Local\Temp\ST_2988_00000b.tmp not found
+file C:\Users\WB459082\AppData\Local\Temp\ST_3a4_00000b.tmp not found
 
     Sorry... No metadata available for SH.STA.SMSS.ZS - People using safely managed sanitation services (% of population).
 
@@ -177,9 +177,12 @@ file C:\Users\WB459082\AppData\Local\Temp\ST_2988_00000b.tmp not found
 
 . putdocx text ("Figure 1: "), bold
 
-. putdocx text ("This figure shows people using safely managed sanitation services as a percentage of the total population in the x-axis for the year 2012 Access to sanitation facilities  is increasing over time
->  in most countries, it is not doing so in an even way that will allow to reach max coverage. Low income: Niger (8%), Sierra Leone (12%), Mali (15%) have barely increased. Upper Middle Income; Belarus, Venezuel
-> a, Libya China +18% . High income countries have reached the maximum such as Monaco, Kuwait, and Singapore")
+. putdocx text ("One of the indicators used to measure progress towards Sustainable Development Goal 6 is the share of population with access to safely managed sanitation services (facilities that are uniquely u
+> sed by the household where excreta are treated and disposed of separated from human contact). Even though access to safely managed sanitation services has increased over time in most countries, it is not doing
+>  so uniformly. Countries with the least access are not increasing access as fast, which is shown by the quadratic relationship between initial access and the increase in access achieved over time measured as t
+> he change between 2017 and 2012. Low-income countries with low access to safely managed sanitation services, i.e., Niger (8%), Sierra Leone (12%), Mali (15%), are among the countries that have achieved the lea
+> st progress during this five-year period. High income countries, such as Monaco, Kuwait, and Singapore, have achieved universal access to safely managed sanitation services. Therefore, their progress over time
+>  is also limited. It is the lower and upper middle-income countries that have achieved the most progress, with China being the leader by increasing access from 53.93% in 2012 to 72.08% in 2017.")
 
 . putdocx save Part1.docx, replace
 successfully replaced "C:/Users/WB459082/OneDrive - WBG/Documents/Code-examples/5. DECDG/Part1.docx"
@@ -190,5 +193,5 @@ successfully replaced "C:/Users/WB459082/OneDrive - WBG/Documents/Code-examples/
       name:  <unnamed>
        log:  C:\Users\WB459082\OneDrive - WBG\Documents\Code-examples\5. DECDG\part1_script1.txt
   log type:  text
- closed on:  26 Jan 2021, 19:28:20
+ closed on:  26 Jan 2021, 21:16:06
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
