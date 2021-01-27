@@ -97,7 +97,7 @@ foreach r of local regionList{
               3: Figure 
 ==================================================*/
 
-*----------3.1: Download data wide
+*----------3.1: Download data in wide format
 wbopendata, language(en - English) country() topics() indicator(SH.STA.SMSS.ZS - People using safely managed sanitation services (% of population)) clear
 foreach var of varlist _all {
 	capture assert mi(`var')
@@ -111,7 +111,7 @@ gen difference = `endyear' - `baseyear'
 drop if region=="NA"
 drop if difference==.
 
-*----------3.2: Figure Scatterplot
+*----------3.2: Figure 1: Scatterplot
 local options "mlabel(countrycode) mlabsize(half_tiny) mlabposition(0) mlabcolor(black)"
 graph twoway ///
 	(scatter difference `baseyear' if incomelevelname=="Low income", `options' mcolor(red)) ///
@@ -124,7 +124,7 @@ graph twoway ///
 
 graph export "graphs\\Graph`baseyear'_`endyear'.png", replace
 
-*----------3.3: Create document
+*----------3.3: Export to Word document
 putdocx begin
 
 putdocx paragraph, halign(center)
@@ -137,7 +137,7 @@ putdocx image "graphs\\Graph`baseyear'_`endyear'.png"
 // Create a paragraph
 putdocx paragraph
 putdocx text ("Figure 1: "), bold
-putdocx text ("One of the indicators used to measure progress towards Sustainable Development Goal 6 is the share of population with access to safely managed sanitation services (facilities that are uniquely used by the household where excreta are treated and disposed of separated from human contact). Even though access to safely managed sanitation services has increased over time in most countries, it is not doing so uniformly. Countries with the least access are not increasing access as fast, which is shown by the quadratic relationship between initial access and the increase in access achieved over time measured as the change between 2017 and 2012. Low-income countries with low access to safely managed sanitation services, i.e., Niger (8%), Sierra Leone (12%), Mali (15%), are among the countries that have achieved the least progress during this five-year period. High income countries, such as Monaco, Kuwait, and Singapore, have achieved universal access to safely managed sanitation services. Therefore, their progress over time is also limited. It is the lower and upper middle-income countries that have achieved the most progress, with China being the leader by increasing access from 53.93% in 2012 to 72.08% in 2017.")
+putdocx text ("One of the indicators used to measure progress towards Sustainable Development Goal 6 is the share of population with access to safely managed sanitation services (facilities that are uniquely used by the household where excreta are treated and disposed of separated from human contact). Even though access to safely managed sanitation services has increased over time in most countries, it is not doing so uniformly. Countries with the least access are not increasing access as rapidly, which leads to the inverted-U shape in the quadratic relationship between initial access and the increase in access achieved over time measured as change between 2017 and 2012. Low-income countries with low access to safely managed sanitation services, i.e., Niger (8%), Sierra Leone (12%), Mali (15%), are among the countries that have achieved the least progress during this five-year period. High income countries, such as Monaco, Kuwait, and Singapore, have achieved universal access to safely managed sanitation services. Therefore, their progress over time is also limited. It is the lower and upper middle-income countries that have achieved the most progress, with China being the leader by increasing access from 53.93% in 2012 to 72.08% in 2017.")
 putdocx save Part1.docx, replace
 
 
