@@ -108,8 +108,8 @@ foreach var of varlist _all {
 local baseyear "yr2012"
 local endyear "yr2017"
 gen difference = `endyear' - `baseyear' 
-drop if region=="NA"
-drop if difference==.
+drop if region == "NA"
+drop if difference == .
 
 *----------3.2: Figure 1: Scatterplot
 local options "mlabel(countrycode) mlabsize(half_tiny) mlabposition(0) mlabcolor(black)"
